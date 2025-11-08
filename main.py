@@ -2,12 +2,21 @@ from utils import *
 from grid import Grid
 from searching_algorithms import *
 
+def draw(grid, algo):
+    grid.draw()  # draw the grid and its spots
+    text_surf = font.render(f"Algorithm: {algo.__name__}", True, (0, 0, 0))
+    WIN.blit(text_surf, (10, 10))
+    pygame.display.update()
+
 if __name__ == "__main__":
     # setting up how big will be the display window
     WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 
     # set a caption for the window
     pygame.display.set_caption("Path Visualizing Algorithm")
+
+    pygame.font.init()
+    font = pygame.font.SysFont(None, 50)
 
     ROWS = 50  # number of rows
     COLS = 50  # number of columns
@@ -20,8 +29,11 @@ if __name__ == "__main__":
     run = True
     started = False
 
+    algos = [ida, dijkstra, iddfs, ucs, dls, astar, bfs, dfs]
+    algo = 0
+
     while run:
-        grid.draw()  # draw the grid and its spots
+        draw(grid, algos[algo])
         for event in pygame.event.get():
             # verify what events happened
             if event.type == pygame.QUIT:
@@ -65,11 +77,9 @@ if __name__ == "__main__":
                     for row in grid.grid:
                         for spot in row:
                             spot.update_neighbors(grid.grid)
-                    # here you can call the algorithms
-                    # bfs(lambda: grid.draw(), grid, start, end)
-                    # dfs(lambda: grid.draw(), grid, start, end)
-                    # astar(lambda: grid.draw(), grid, start, end)
-                    # ... and the others?
+
+                    algos[algo](lambda: draw(grid, algos[algo]), grid, start, end)
+
                     started = False
 
                 if event.key == pygame.K_c:
@@ -77,4 +87,7 @@ if __name__ == "__main__":
                     start = None
                     end = None
                     grid.reset()
+
+                if event.key == pygame.K_a:
+                    algo = (algo + 1) % len(algos)
     pygame.quit()
