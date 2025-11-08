@@ -372,14 +372,17 @@ def ida(draw: callable, grid: Grid, start: Spot, end: Spot) -> bool:
     heuristic = h_manhattan_distance
 
     def dfs_helper() -> (dict, int):
-        stack = [(0, start)]
+        stack = [start]
+        costs = dict()
+        costs[start] = 0
         came_from = dict()
         visited = set()
         pruned_bound = math.inf
 
         while len(stack) > 0:
             draw()
-            cost, current = stack.pop()
+            current = stack.pop()
+            cost = costs[current]
             if current.get_position() == end.get_position():
                 return (came_from, 0)
 
@@ -387,22 +390,31 @@ def ida(draw: callable, grid: Grid, start: Spot, end: Spot) -> bool:
                 current.make_closed()
 
             for n in current.neighbors:
+                new_cost = cost + 1
+                new_bound = heuristic(n.get_position(), end.get_position()) + new_cost
                 if n not in visited:
-                    came_from[n] = current
-                    visited.add(n)
-                    new_cost = cost + 1
-                    new_bound = heuristic(n.get_position(), end.get_position()) + new_cost
                     if new_bound > bound:
                         if new_bound < pruned_bound:
                             pruned_bound = new_bound
                     else:
-                        stack.append((new_cost, n))
+                        came_from[n] = current
+                        costs[n] = new_cost
+                        visited.add(n)
+                        stack.append(n)
+                        n.make_open()
+                elif costs[n] > new_cost:
+                    came_from[n] = current
+                    costs[n] = new_cost
+                    for i in range(len(stack)):
+                        if stack[i].get_position() == n.get_position():
+                            break
+                    else:
+                        stack.append(n)
                         n.make_open()
         return (None, pruned_bound)
 
 
     bound = heuristic(start.get_position(), end.get_position())
-    print(bound)
     found = False
     while not found:
         for row in grid.grid:
@@ -421,6 +433,7 @@ def ida(draw: callable, grid: Grid, start: Spot, end: Spot) -> bool:
             start.make_start()
             return True
         bound = new_bound
+        print(bound)
 
     return False
 
