@@ -25,6 +25,12 @@ class Spot:
         self.neighbors: list = []
         self.total_rows: int = total_rows
 
+    def __str__(self) -> str:
+        return f"[Cell: {self.row} {self.col}]"
+
+    def __repr__(self) -> str:
+        return f"[Cell: {self.row} {self.col}]"
+
     # ---- Methods to change the state of the spot (i.e., its setters) ----
     def get_position(self) -> tuple[int, int]:
         """
